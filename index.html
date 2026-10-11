@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0b1020">
+  <meta name="description" content="NEON QUEST: an endless neon platformer with ever-changing worlds, plus a 3-level campaign and a boss fight. Plays in any browser on PC, laptop, phone and tablet.">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Neon Quest">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>NEON QUEST</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body class="in-menu">
+  <canvas id="game" aria-label="NEON QUEST game canvas"></canvas>
+
+  <!-- ============ MAIN MENU ============ -->
+  <main id="s-menu" class="screen">
+    <div class="menu-card">
+      <h1 class="logo" aria-label="NEON QUEST"><span>NEON</span> <span>QUEST</span></h1>
+      <p class="tagline">endless · stomp · dash · ever-changing worlds</p>
+      <nav class="menu-buttons" aria-label="Main menu">
+        <button class="btn primary" data-act="play">▶ Play (endless)</button>
+        <button class="btn" data-act="levels">Level select</button>
+        <button class="btn" data-act="howto" data-back="menu">How to play</button>
+        <button class="btn" data-act="scores">High scores</button>
+        <button class="btn" data-act="settings" data-back="menu">Settings</button>
+        <button class="btn ghost hidden" id="btn-install">⬇ Install app</button>
+      </nav>
+      <p class="fine">Best run: <span id="best-overall">0</span> · Tip: press <kbd>H</kbd> anywhere for help</p>
+    </div>
+  </main>
+
+  <!-- ============ LEVEL SELECT ============ -->
+  <main id="s-levels" class="screen hidden">
+    <div class="panel">
+      <header class="panel-head"><button class="btn ghost" data-act="back">← Back</button><h2>Select a level</h2></header>
+      <div class="level-grid" id="level-grid"></div>
+    </div>
+  </main>
+
+  <!-- ============ HOW TO PLAY ============ -->
+  <main id="s-howto" class="screen hidden">
+    <div class="panel wide">
+      <header class="panel-head"><button class="btn ghost" data-act="back">← Back</button><h2>How to play</h2></header>
+      <div class="howto">
+        <section class="card">
+          <h3>🎯 Goal</h3>
+          <p>Choose <b>▶ Play</b> for an endless run, or pick a campaign level in <b>Level select</b>. The campaign has 3 levels, ending with the <b>Stone Golem</b> boss.</p>
+          <p>You start with <b>4 lives</b>. Lose them all and the run is over. Campaign levels can be retried; an endless run starts again from <b>0</b>.</p>
+        </section>
+
+        <section class="card">
+          <h3>∞ Endless runs</h3>
+          <ul>
+            <li>Each stage is a new level with a flag at the end. Clear it to move on to the next, forever.</li>
+            <li>Stages come from six worlds (Sunny Meadows, Frozen Caverns, Volcano Keep, Dune Sands, Neon Skyline, Cloud Isles) and eight obstacle mixes. The sign at the start of a stage tells you its mix.</li>
+            <li>Every run shuffles worlds and mixes, so no two runs look the same. Stages get harder as you go.</li>
+            <li><b>Run over</b> (no lives left): your score goes to the high scores and a new run starts at 0.</li>
+          </ul>
+        </section>
+
+        <section class="card">
+          <h3>🎮 Controls</h3>
+          <table class="keys">
+            <tr><th>Action</th><th>Keyboard</th><th>Gamepad</th><th>Touch</th></tr>
+            <tr><td>Move</td><td><kbd>←</kbd><kbd>→</kbd> or <kbd>A</kbd><kbd>D</kbd></td><td>D-pad / stick</td><td>◀ ▶ buttons</td></tr>
+            <tr><td>Jump (hold for higher)</td><td><kbd>Space</kbd> <kbd>↑</kbd> <kbd>W</kbd></td><td>A button</td><td>JUMP</td></tr>
+            <tr><td>Dash</td><td><kbd>Shift</kbd> <kbd>J</kbd> <kbd>K</kbd></td><td>X / B button</td><td>DASH</td></tr>
+            <tr><td>Pause</td><td><kbd>P</kbd> <kbd>Esc</kbd></td><td>Start</td><td>❚❚ button</td></tr>
+            <tr><td>Restart stage (keeps lives)</td><td><kbd>R</kbd></td><td>–</td><td>Pause menu</td></tr>
+            <tr><td>Mute / Fullscreen</td><td><kbd>M</kbd> / <kbd>F</kbd></td><td>–</td><td>Top-right buttons</td></tr>
+          </table>
+        </section>
+
+        <section class="card">
+          <h3>⚔️ Moves</h3>
+          <ul>
+            <li><b>Stomp</b>: land on an enemy's head to squash it. Stomp again before touching the ground for a <b>combo</b> (x2 up to x5).</li>
+            <li><b>Dash</b>: a quick, invincible burst. It smashes walkers, bats and turrets, and damages the Golem. It has a short cooldown.</li>
+            <li><b>Coyote time &amp; jump buffer</b>: you can jump a few frames after leaving a ledge or press jump slightly early.</li>
+          </ul>
+        </section>
+
+        <section class="card">
+          <h3>🧭 The world</h3>
+          <ul class="legend">
+            <li><i class="dot" style="background:#b06cf0"></i>Slime: walks in a patrol. Stomp or dash it.</li>
+            <li><i class="dot" style="background:#4a3a6e"></i>Bat: swoops in waves. Stomp or dash it.</li>
+            <li><i class="dot" style="background:#7d869c"></i>Turret: fires at you when near. Dash into it to smash it.</li>
+            <li><i class="dot" style="background:#8c8496"></i>Golem rocks and fireballs: dodge or dash through them.</li>
+            <li><i class="dot" style="background:#d5dbe8"></i>Spikes: hurt you. Jump over them.</li>
+            <li><i class="dot" style="background:#2a84dc"></i>Water and lava pits: falling in costs a life and sends you to your checkpoint.</li>
+            <li><i class="dot" style="background:#ffd84a"></i>Coins: +10 points. Every 30 coins gives a bonus life.</li>
+            <li><i class="dot" style="background:#ff5a86"></i>Hearts: +1 life.</li>
+            <li><i class="dot" style="background:#3ddc84"></i>Spring pads: launch you high. Stand on them.</li>
+            <li><i class="dot" style="background:#7ff9f0"></i>Checkpoints: save your spot after you pass them.</li>
+            <li><i class="dot" style="background:#c79a5e"></i>Moving and crumbling platforms: crumbling ones fall after a moment, so keep moving.</li>
+          </ul>
+        </section>
+
+        <section class="card">
+          <h3>🏆 Scoring</h3>
+          <table class="keys">
+            <tr><td>Coin</td><td>+10</td></tr>
+            <tr><td>Stomp (combo x1 to x5)</td><td>+100 to +500</td></tr>
+            <tr><td>Dash smash</td><td>+150</td></tr>
+            <tr><td>Golem hit / defeat</td><td>+250 / +1000</td></tr>
+            <tr><td>Level clear</td><td>+500, plus time bonus</td></tr>
+            <tr><td>No damage taken</td><td>+500</td></tr>
+            <tr><td>All coins collected</td><td>+300</td></tr>
+          </table>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ HIGH SCORES ============ -->
+  <main id="s-scores" class="screen hidden">
+    <div class="panel">
+      <header class="panel-head"><button class="btn ghost" data-act="back">← Back</button><h2>High scores</h2></header>
+      <div id="score-table"></div>
+      <button class="btn danger small" id="btn-clear-scores">Clear scores</button>
+    </div>
+  </main>
+
+  <!-- ============ SETTINGS ============ -->
+  <main id="s-settings" class="screen hidden">
+    <div class="panel">
+      <header class="panel-head"><button class="btn ghost" data-act="back">← Back</button><h2>Settings</h2></header>
+      <div class="settings">
+        <label>Music volume <output id="out-music">50</output>
+          <input type="range" id="set-music" min="0" max="100" step="5"></label>
+        <label>Sound effects <output id="out-sfx">70</output>
+          <input type="range" id="set-sfx" min="0" max="100" step="5"></label>
+        <label class="check"><input type="checkbox" id="set-mute"> Mute everything</label>
+        <label class="check"><input type="checkbox" id="set-shake"> Screen shake</label>
+        <label>Touch controls
+          <select id="set-touch">
+            <option value="auto">Automatic</option>
+            <option value="on">Always on</option>
+            <option value="off">Off</option>
+          </select></label>
+        <label>Player name (for high scores)
+          <input type="text" id="set-name" maxlength="12" placeholder="PLAYER"></label>
+        <button class="btn danger small" id="btn-reset">Reset all progress</button>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ IN-GAME OVERLAYS ============ -->
+  <section id="o-pause" class="overlay hidden" role="dialog" aria-label="Paused">
+    <div class="panel">
+      <h2>Paused</h2>
+      <div class="stack">
+        <button class="btn primary" data-act="resume">▶ Resume</button>
+        <button class="btn" data-act="restart">↺ Restart stage (R)</button>
+        <button class="btn" data-act="howto" data-back="pause">How to play</button>
+        <button class="btn" data-act="settings" data-back="pause">Settings</button>
+        <button class="btn danger" data-act="quit">⏏ Quit to menu</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="o-clear" class="overlay hidden" role="dialog" aria-label="Level complete">
+    <div class="panel">
+      <h2 class="glow-gold" id="clear-title">LEVEL COMPLETE!</h2>
+      <div id="clear-summary" class="summary"></div>
+      <button class="btn primary" id="btn-next" data-act="next">Next level ▶</button>
+    </div>
+  </section>
+
+  <section id="o-over" class="overlay hidden" role="dialog" aria-label="Game over">
+    <div class="panel">
+      <h2 class="glow-red" id="over-title">GAME OVER</h2>
+      <div id="over-summary" class="summary"></div>
+      <div class="stack">
+        <button class="btn primary" id="btn-retry" data-act="retry">↺ Retry level</button>
+        <button class="btn" data-act="quit">Main menu</button>
+      </div>
+    </div>
+  </section>
+
+  <section id="o-win" class="overlay hidden" role="dialog" aria-label="Victory">
+    <div class="panel">
+      <h2 class="glow-gold">YOU WIN!</h2>
+      <p>You conquered all three levels and defeated the Stone Golem.</p>
+      <div id="win-summary" class="summary"></div>
+      <div class="stack">
+        <button class="btn primary" data-act="newgame">▶ Play again (endless)</button>
+        <button class="btn" data-act="quit">Main menu</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TOUCH + UTILITIES ============ -->
+  <div id="touch" class="hidden" aria-hidden="true">
+    <div class="pad-left">
+      <button class="tbtn" data-hold="left" aria-label="Move left">◀</button>
+      <button class="tbtn" data-hold="right" aria-label="Move right">▶</button>
+    </div>
+    <div class="pad-right">
+      <button class="tbtn dash" data-hold="dash" aria-label="Dash">DASH</button>
+      <button class="tbtn jump" data-hold="jump" aria-label="Jump">JUMP</button>
+    </div>
+  </div>
+
+  <div id="util" class="hidden" role="toolbar" aria-label="Game controls">
+    <button class="ubtn" id="u-pause" title="Pause (P / Esc)" aria-label="Pause">❚❚</button>
+    <button class="ubtn" id="u-mute" title="Mute (M)" aria-label="Mute">🔊</button>
+    <button class="ubtn" id="u-full" title="Fullscreen (F)" aria-label="Fullscreen">⛶</button>
+  </div>
+
+  <div id="rotate" class="hidden">
+    <div>📱 Rotate your phone to landscape for the best experience</div>
+  </div>
+  <div id="toast" role="status" aria-live="polite"></div>
+  <noscript><p class="noscript">NEON QUEST needs JavaScript to run.</p></noscript>
+
+  <script src="js/audio.js"></script>
+  <script src="js/levels.js"></script>
+  <script src="js/generator.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/entities.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+</body>
+</html>
